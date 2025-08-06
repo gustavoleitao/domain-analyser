@@ -1,12 +1,12 @@
 // src/domain/domain.service.ts
 
-const isProduction = process.env.NODE_ENV === 'production';
+const isRender = !!process.env.RENDER; // variável automática no Render
 
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 import * as dns from 'dns/promises';
 import chromium from 'chrome-aws-lambda';
-const puppeteerLib = isProduction ? require('puppeteer-core') : require('puppeteer');
+const puppeteerLib = isRender ? require('puppeteer-core') : require('puppeteer');
 import * as dotenv from 'dotenv';
 dotenv.config();
 
@@ -79,7 +79,7 @@ export class DomainService {
 
     const browser = await puppeteerLib.launch({
       headless: true,
-      ...(isProduction
+      ...(isRender
         ? {
           args: chromium.args,
           executablePath: await chromium.executablePath,
