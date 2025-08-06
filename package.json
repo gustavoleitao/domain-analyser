@@ -7,6 +7,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
+    "postinstall": "puppeteer install",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -26,8 +27,10 @@
     "@nestjs/serve-static": "^5.0.3",
     "axios": "^1.11.0",
     "cheerio": "^1.1.2",
+    "chrome-aws-lambda": "^10.1.0",
     "dotenv": "^17.2.1",
     "puppeteer": "^24.15.0",
+    "puppeteer-core": "^24.15.0",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
     "whois-json": "^2.0.4"

@@ -1,11 +1,16 @@
 // src/domain/domain.service.ts
+
+const isProduction = process.env.NODE_ENV === 'production';
+
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 import * as dns from 'dns/promises';
-import * as puppeteer from 'puppeteer';
-
+import chromium from 'chrome-aws-lambda';
+const puppeteerLib = isProduction ? require('puppeteer-core') : require('puppeteer');
 import * as dotenv from 'dotenv';
 dotenv.config();
+
+
 
 @Injectable()
 export class DomainService {
@@ -71,10 +76,17 @@ export class DomainService {
 
   async getRegistroBrInfoComPuppeteer(domain: string) {
     const url = `https://registro.br/tecnologia/ferramentas/whois/?search=${domain}`;
-    const browser = await puppeteer.launch({
+
+    const browser = await puppeteerLib.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      ...(isProduction
+        ? {
+          args: chromium.args,
+          executablePath: await chromium.executablePath,
+        }
+        : {}),
     });
+
     const page = await browser.newPage();
 
     await page.goto(url, { waitUntil: 'networkidle0' });
