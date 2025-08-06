@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Consulta de Domínio</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      background: #f4f4f4;
+      color: #333;
+    }
+    h1 {
+      margin-bottom: 1rem;
+    }
+    input {
+      padding: 0.5rem;
+      width: 300px;
+      margin-right: 0.5rem;
+    }
+    button {
+      padding: 0.5rem 1rem;
+    }
+    .resultado {
+      margin-top: 2rem;
+      background: #fff;
+      padding: 1.5rem;
+      border-radius: 6px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      text-align: left;
+      padding: 0.5rem;
+      border-bottom: 1px solid #ddd;
+    }
+    h2 {
+      margin-top: 2rem;
+      border-bottom: 2px solid #333;
+      padding-bottom: 0.3rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Consulta de Domínio</h1>
+  <input type="text" id="domainInput" placeholder="ex: globo.com.br" />
+  <button onclick="consultar()">Consultar</button>
+
+  <div id="resultado" class="resultado"></div>
+
+  <script>
+    async function consultar() {
+      const dominio = document.getElementById('domainInput').value;
+      const resultadoElem = document.getElementById('resultado');
+      resultadoElem.innerHTML = 'Carregando...';
+
+      try {
+        const resposta = await fetch(`/consulta?dominio=${dominio}`);
+        const dados = await resposta.json();
+
+        if (dados.error) {
+          resultadoElem.innerHTML = `<strong>Erro:</strong> ${dados.error}`;
+          return;
+        }
+
+        const registro = dados.registro || {};
+        const registroBr = registro.registroBr || {};
+        const hospedagem = dados.hospedagem || {};
+        const arin = hospedagem.arin || {};
+
+        let html = '';
+
+        // 1. Empresa Intermediária
+        html += `<h2>Empresa Intermediária para Registro</h2>`;
+        if (dados.registradora) {
+          html += `<table>`;
+          html += `<tr><td>Nome:</td><td>${dados.registradora.nome || '-'}</td></tr>`;
+          html += `<tr><td>Site:</td><td>${dados.registradora.site ? `<a href="${dados.registradora.site}" target="_blank">${dados.registradora.site}</a>` : '-'}</td></tr>`;
+          html += `<tr><td>Email:</td><td>${dados.registradora.email || '-'}</td></tr>`;
+          html += `<tr><td>Telefone:</td><td>${dados.registradora.telefone || '-'}</td></tr>`;
+          html += `</table>`;
+        } else {
+          html += `<p>Informações não disponíveis.</p>`;
+        }
+
+        // 2. Responsável pelo Domínio
+        html += `<h2>Responsável pelo Domínio</h2><table>`;
+        if (registro.registrante) html += `<tr><td>Nome:</td><td>${registro.registrante}</td></tr>`;
+        if (registroBr.titular) html += `<tr><td>Razão Social:</td><td>${registroBr.titular}</td></tr>`;
+        if (registroBr.documento) html += `<tr><td>Documento:</td><td>${registroBr.documento}</td></tr>`;
+        if (registro.endereco?.cidade) html += `<tr><td>Cidade:</td><td>${registro.endereco.cidade}</td></tr>`;
+        if (registro.endereco?.estado) html += `<tr><td>Estado:</td><td>${registro.endereco.estado}</td></tr>`;
+        if (registro.endereco?.pais) html += `<tr><td>País:</td><td>${registro.endereco.pais}</td></tr>`;
+        if (registroBr.emailTitular) html += `<tr><td>Email:</td><td>${registroBr.emailTitular}</td></tr>`;
+        html += `</table>`;
+
+        // 3. Empresa de Hospedagem
+        html += `<h2>Empresa de Hospedagem</h2><table>`;
+        if (hospedagem.organizacao) html += `<tr><td>Organização:</td><td>${hospedagem.organizacao}</td></tr>`;
+        if (hospedagem.isp) html += `<tr><td>Provedor:</td><td>${hospedagem.isp}</td></tr>`;
+        if (hospedagem.cidade) html += `<tr><td>Cidade:</td><td>${hospedagem.cidade}</td></tr>`;
+        if (hospedagem.pais) html += `<tr><td>País:</td><td>${hospedagem.pais}</td></tr>`;
+        if (arin.contatos && arin.contatos.length > 0)
+          html += `<tr><td>Contatos:</td><td>${arin.contatos.join('<br>')}</td></tr>`;
+        html += `</table>`;
+
+        resultadoElem.innerHTML = html;
+      } catch (erro) {
+        resultadoElem.innerHTML = `<strong>Erro ao consultar domínio:</strong> ${erro.message}`;
+      }
+    }
+  </script>
+</body>
+</html>
