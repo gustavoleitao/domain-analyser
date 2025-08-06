@@ -1,7 +1,5 @@
 // src/domain/domain.service.ts
 
-
-
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 import * as dns from 'dns/promises';
@@ -9,10 +7,9 @@ import * as dotenv from 'dotenv';
 
 const isRender = !!process.env.RENDER;
 
-import * as puppeteer from 'puppeteer';
 import chromium from 'chrome-aws-lambda';
 
-const puppeteerLib = isRender ? require('puppeteer-core') : puppeteer;
+const puppeteerLib = isRender ? require('puppeteer-core') : require('puppeteer');
 
 dotenv.config();
 
@@ -81,9 +78,13 @@ export class DomainService {
   async getRegistroBrInfoComPuppeteer(domain: string) {
     const url = `https://registro.br/tecnologia/ferramentas/whois/?search=${domain}`;
 
+    const executablePath = isRender ? await chromium.executablePath : undefined;
+    if (isRender && !executablePath) {
+      throw new Error('Chrome não encontrado no ambiente Render.');
+    }
     const browser = await puppeteerLib.launch({
       args: isRender ? chromium.args : [],
-      executablePath: isRender ? await chromium.executablePath : undefined,
+      executablePath,
       headless: true,
     });
 
