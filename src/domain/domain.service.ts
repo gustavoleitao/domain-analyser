@@ -1,16 +1,20 @@
 // src/domain/domain.service.ts
 
-const isRender = !!process.env.RENDER; // variável automática no Render
+
 
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 import * as dns from 'dns/promises';
-import chromium from 'chrome-aws-lambda';
-const puppeteerLib = isRender ? require('puppeteer-core') : require('puppeteer');
 import * as dotenv from 'dotenv';
+
+const isRender = !!process.env.RENDER;
+
+import * as puppeteer from 'puppeteer';
+import chromium from 'chrome-aws-lambda';
+
+const puppeteerLib = isRender ? require('puppeteer-core') : puppeteer;
+
 dotenv.config();
-
-
 
 @Injectable()
 export class DomainService {
@@ -78,13 +82,9 @@ export class DomainService {
     const url = `https://registro.br/tecnologia/ferramentas/whois/?search=${domain}`;
 
     const browser = await puppeteerLib.launch({
+      args: isRender ? chromium.args : [],
+      executablePath: isRender ? await chromium.executablePath : undefined,
       headless: true,
-      ...(isRender
-        ? {
-          args: chromium.args,
-          executablePath: await chromium.executablePath,
-        }
-        : {}),
     });
 
     const page = await browser.newPage();
