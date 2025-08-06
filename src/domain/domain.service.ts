@@ -83,8 +83,10 @@ export class DomainService {
     });
 
     const page = await browser.newPage();
-
-    await page.goto(url, { waitUntil: 'networkidle0' });
+    await page.setUserAgent(
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
+    );
+    await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 });
     await page.waitForSelector('.whois-response.active', { timeout: 10000 });
 
     const result = await page.evaluate(() => {
@@ -188,7 +190,7 @@ export class DomainService {
 
     const registro = {
       ...registroBase,
-      ...(registroBrInfo && { registroBr: registroBrInfo }),
+      ...(Object.keys(registroBrInfo).length > 0 ? { registroBr: registroBrInfo } : {}),
     };
 
     let ip = '';
@@ -243,9 +245,11 @@ export class DomainService {
       registro,
       registradora: nomeRegistradora
         ? {
-          nome: nomeRegistradora,
-          ...contatoRegistradora,
-        }
+            nome: nomeRegistradora,
+            site: contatoRegistradora?.site || null,
+            email: contatoRegistradora?.email || null,
+            telefone: contatoRegistradora?.telefone || null,
+          }
         : null,
       hospedagem: {
         organizacao: ipInfo['org'] || null,
