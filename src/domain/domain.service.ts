@@ -4,11 +4,7 @@ import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 import * as dns from 'dns/promises';
 import * as dotenv from 'dotenv';
-
-const isRender = !!process.env.RENDER;
-
 import puppeteer from 'puppeteer';
-
 
 dotenv.config();
 
@@ -194,9 +190,11 @@ export class DomainService {
     };
 
     let ip = '';
+    let todosIps: string[] = [];
     try {
       const addresses = await dns.resolve4(domain);
       ip = addresses[0];
+      todosIps.push(...addresses);
     } catch (err) {
       console.error('Erro ao resolver IP', err);
     }
@@ -241,7 +239,7 @@ export class DomainService {
 
     return {
       domain,
-      ip,
+      ips: todosIps,
       registro,
       registradora: nomeRegistradora
         ? {

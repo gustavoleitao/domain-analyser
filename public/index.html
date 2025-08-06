@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Consulta de Domínio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -43,6 +44,42 @@
       border-bottom: 2px solid #333;
       padding-bottom: 0.3rem;
     }
+
+    input, button {
+      box-sizing: border-box;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 1rem;
+      }
+
+      input {
+        width: 100%;
+        margin-bottom: 0.5rem;
+      }
+
+      button {
+        width: 100%;
+        padding: 0.75rem;
+      }
+
+      table {
+        font-size: 0.9rem;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      h2 {
+        font-size: 1.2rem;
+      }
+
+      .resultado {
+        padding: 1rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -74,7 +111,28 @@
 
         let html = '';
 
-        // 1. Empresa Intermediária
+        // 1. Responsável pelo Domínio
+        html += `<h2>Responsável pelo Domínio</h2><table>`;
+        if (registro.registrante) html += `<tr><td>Nome:</td><td>${registro.registrante}</td></tr>`;
+        if (registroBr.titular) html += `<tr><td>Razão Social:</td><td>${registroBr.titular}</td></tr>`;
+        if (registroBr.documento) html += `<tr><td>Documento:</td><td>${registroBr.documento}</td></tr>`;
+        if (registro.endereco?.cidade) html += `<tr><td>Cidade:</td><td>${registro.endereco.cidade}</td></tr>`;
+        if (registro.endereco?.estado) html += `<tr><td>Estado:</td><td>${registro.endereco.estado}</td></tr>`;
+        if (registro.endereco?.pais) html += `<tr><td>País:</td><td>${registro.endereco.pais}</td></tr>`;
+        if (registroBr.emailTitular) html += `<tr><td>Email:</td><td>${registroBr.emailTitular}</td></tr>`;
+        html += `</table>`;
+
+        // 2. Empresa de Hospedagem
+        html += `<h2>Empresa de Hospedagem</h2><table>`;
+        if (hospedagem.organizacao) html += `<tr><td>Organização:</td><td>${hospedagem.organizacao}</td></tr>`;
+        if (hospedagem.isp) html += `<tr><td>Provedor:</td><td>${hospedagem.isp}</td></tr>`;
+        if (hospedagem.cidade) html += `<tr><td>Cidade:</td><td>${hospedagem.cidade}</td></tr>`;
+        if (hospedagem.pais) html += `<tr><td>País:</td><td>${hospedagem.pais}</td></tr>`;
+        if (arin.contatos && arin.contatos.length > 0)
+          html += `<tr><td>Contatos:</td><td>${arin.contatos.join('<br>')}</td></tr>`;
+        html += `</table>`;
+
+        // 3. Empresa Intermediária para Registro
         html += `<h2>Empresa Intermediária para Registro</h2>`;
         if (dados.registradora) {
           html += `<table>`;
@@ -87,26 +145,25 @@
           html += `<p>Informações não disponíveis.</p>`;
         }
 
-        // 2. Responsável pelo Domínio
-        html += `<h2>Responsável pelo Domínio</h2><table>`;
-        if (registro.registrante) html += `<tr><td>Nome:</td><td>${registro.registrante}</td></tr>`;
-        if (registroBr.titular) html += `<tr><td>Razão Social:</td><td>${registroBr.titular}</td></tr>`;
-        if (registroBr.documento) html += `<tr><td>Documento:</td><td>${registroBr.documento}</td></tr>`;
-        if (registro.endereco?.cidade) html += `<tr><td>Cidade:</td><td>${registro.endereco.cidade}</td></tr>`;
-        if (registro.endereco?.estado) html += `<tr><td>Estado:</td><td>${registro.endereco.estado}</td></tr>`;
-        if (registro.endereco?.pais) html += `<tr><td>País:</td><td>${registro.endereco.pais}</td></tr>`;
-        if (registroBr.emailTitular) html += `<tr><td>Email:</td><td>${registroBr.emailTitular}</td></tr>`;
-        html += `</table>`;
+        // 4. Informações Técnicas
+        if (
+          registroBr.contatoTitular ||
+          registroBr.contatoTecnico ||
+          (registroBr.dns && registroBr.dns.length > 0) ||
+          (dados.ips && dados.ips.length > 0)
+        ) {
+          html += `<h2>Informações Técnicas</h2><table>`;
+          if (registroBr.contatoTitular) html += `<tr><td>Contato do Titular:</td><td>${registroBr.contatoTitular}</td></tr>`;
+          if (registroBr.contatoTecnico) html += `<tr><td>Contato Técnico:</td><td>${registroBr.contatoTecnico}</td></tr>`;
+          if (registroBr.dns && registroBr.dns.length > 0) {
+            html += `<tr><td>Servidores DNS:</td><td>${registroBr.dns.join('<br>')}</td></tr>`;
+          }
+          if (dados.ips && dados.ips.length > 0) {
+            html += `<tr><td>Endereços IP:</td><td>${dados.ips.join('<br>')}</td></tr>`;
+          }
+          html += `</table>`;
+        }
 
-        // 3. Empresa de Hospedagem
-        html += `<h2>Empresa de Hospedagem</h2><table>`;
-        if (hospedagem.organizacao) html += `<tr><td>Organização:</td><td>${hospedagem.organizacao}</td></tr>`;
-        if (hospedagem.isp) html += `<tr><td>Provedor:</td><td>${hospedagem.isp}</td></tr>`;
-        if (hospedagem.cidade) html += `<tr><td>Cidade:</td><td>${hospedagem.cidade}</td></tr>`;
-        if (hospedagem.pais) html += `<tr><td>País:</td><td>${hospedagem.pais}</td></tr>`;
-        if (arin.contatos && arin.contatos.length > 0)
-          html += `<tr><td>Contatos:</td><td>${arin.contatos.join('<br>')}</td></tr>`;
-        html += `</table>`;
 
         resultadoElem.innerHTML = html;
       } catch (erro) {
