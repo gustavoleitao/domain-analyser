@@ -7,9 +7,8 @@ import * as dotenv from 'dotenv';
 
 const isRender = !!process.env.RENDER;
 
-import chromium from 'chrome-aws-lambda';
+import puppeteer from 'puppeteer';
 
-const puppeteerLib = isRender ? require('puppeteer-core') : require('puppeteer');
 
 dotenv.config();
 
@@ -78,14 +77,9 @@ export class DomainService {
   async getRegistroBrInfoComPuppeteer(domain: string) {
     const url = `https://registro.br/tecnologia/ferramentas/whois/?search=${domain}`;
 
-    const executablePath = isRender ? await chromium.executablePath : undefined;
-    if (isRender && !executablePath) {
-      throw new Error('Chrome não encontrado no ambiente Render.');
-    }
-    const browser = await puppeteerLib.launch({
-      args: isRender ? chromium.args : [],
-      executablePath,
+   const browser = await puppeteer.launch({
       headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
 
     const page = await browser.newPage();
